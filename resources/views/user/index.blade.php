@@ -37,12 +37,14 @@
                         <td class="py-2">{{ $user->email }}</td>
                         <td class="py-2">
                             <!-- Formulário para excluir usuário -->
-                            <form action="{{ route('user.destroy', $user->id) }}" method="POST">
+                            <form id="formExcluir{{ $user->id }}" action="{{ route('user.destroy', $user->id) }}" method="POST">
                                 @csrf
                                 <button><a href="{{ route('user.show',['id'=> $user->id]) }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4 inline-block">Show</a></button>
                                 <button><a href="{{ route('user.edit',['id'=> $user->id]) }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4 inline-block">Edit</a></button>
                                 @method('DELETE')
-                                <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Delete</button>
+                                <button type="submit" 
+                                        class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                                        onclick="confirmarExclusao(event,{{ $user->id }})">Delete</button>
                             </form>
                         </td>
                     </tr>
@@ -50,5 +52,45 @@
             </tbody>
         </table>
     </div>
+    <script>
+        //Receber o seletor do campo valor
+        let inputvalor = document.getElementById('valor');
+        //Aguardar o usuário digitar o valor no campo
+        inputvalor.addEventListener('input',function(){
+            // Obter  o valor atual removendo qualquer caracter que não seja número
+            let valueValor = this.value.replace(/[^\d]/g, '');
+            // Adicionar os separadores de milhares
+            var formatedValor = (valueValor.slice(0,-2).replace(/\B(?=(\d{3})+(?!\d))/g,'.')) + '' + valueValor.slice(-2); 
+            // Adicionar a virgula e até dois digitos se houver centavos
+            formatedValor = formatedValor.slice(0,-2) + ',' + formatedValor.slice(-2);
+            // atualizar o valor do campo
+            this.value = formatedValor;            
+        });
+
+        function confirmarExclusao(event, contaId){
+            event.preventDefault();
+
+            Swal.fire({
+                title: "<strong>Tem <u>certeza</u></strong>",
+                text: "Você não poderá reverter esta ação.",
+                icon: "warning",
+                showCancelButton: true,
+                cancelButtonColor: '#0d6efd',
+                cancelButtonText: 'Cancelar',
+
+                //focusConfirm: false,
+                confirmButtonText: 'Confirma Exclusão ?',
+                confirmButtonColor: '#dc3545', 
+                //confirmButtonAriaLabel: "Thumbs up, great!",
+                //cancelButtonAriaLabel: "Thumbs down"
+            }).then((result) => {
+                /* Read more about isConfirmed, isDenied below */
+                if (result.isConfirmed) {
+                    //Swal.fire("Saved!", "", "success");
+                    document.getElementById(`formExcluir${contaId}`).submit();
+                }
+            })
+        }
+    </script>
 </body>
 </html>
